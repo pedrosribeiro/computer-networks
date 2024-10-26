@@ -1,0 +1,7 @@
+UDP_IP = "127.0.0.1"
+UDP_PORT = 5005
+UDP_ADDR = (UDP_IP, UDP_PORT)
+
+BUF_SIZE = 3
+ENCODING = "utf-8"
+END_BYTE = b"\xFF"
