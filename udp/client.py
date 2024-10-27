@@ -14,7 +14,7 @@ def send_message(msg: str) -> None:
 
     sock.sendto(END_BYTE, UDP_ADDR)
 
-    print(f"Message sent: {msg}")
+    print(f"Message sent to server: {msg}")
 
 
 if __name__ == "__main__":
