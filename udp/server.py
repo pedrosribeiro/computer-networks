@@ -61,6 +61,7 @@ def handle_message(encoded_msg: bytes, addr: tuple, encoding: str = ENCODING) ->
         else:
             send_message("BEGIN 404", addr, True, encoding)
     else:
+        send_message("BEGIN 400", addr, True, encoding)
         print("Protocol not recognized! Message discarded.")
 
 
