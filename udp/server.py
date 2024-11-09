@@ -13,10 +13,16 @@ def calculate_checksum(data: bytes) -> str:
 
 
 def send_file(filename: str, addr: tuple, encoding: str = ENCODING) -> None:
-    begin_msg = "BEGIN 200"
-    send_message(begin_msg, addr, False, encoding)
 
     with open(filename, mode="rb") as file:
+
+        file_checksum = calculate_checksum(file.read())
+        file.seek(0)  # Reset file pointer to the beginning
+
+        begin_msg = f"BEGIN 200 {file_checksum}"
+        send_message(begin_msg, addr, False, encoding)
+
+        # Loop to send the file
         while True:
             data = file.read(BUF_SIZE)
             if not data:
@@ -80,4 +86,5 @@ def start_server() -> None:
 
 
 if __name__ == "__main__":
+    print("Server started")
     start_server()

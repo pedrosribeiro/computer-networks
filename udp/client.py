@@ -24,6 +24,7 @@ def send_message(msg: str) -> None:
 
 def receive_file(server_addr: tuple):
     recv_data = b""
+    file_checksum = None
 
     while True:
         data, addr = sock.recvfrom(BUF_SIZE)
@@ -39,15 +40,23 @@ def receive_file(server_addr: tuple):
 
         print(f"Data received: {recv_data}")
 
-        header_length = len("BEGIN 200".encode(ENCODING))
-        process_file_data(recv_data[header_length:])  # Ignore "BEGIN 200"
+        header_length = len("BEGIN 200 ".encode(ENCODING))
+        file_checksum = recv_data[header_length : header_length + CHECKSUM_SIZE].decode(
+            ENCODING
+        )
+
+        print(f"File checksum received: {file_checksum}")
+
+        process_file_data(
+            recv_data[header_length + CHECKSUM_SIZE :], file_checksum
+        )  # Ignore "BEGIN 200" and checksum
     elif recv_data.startswith(b"BEGIN 404"):
         print("Server responded with 404 not found")
     else:
         print("Server has not recognized the request")
 
 
-def process_file_data(data: bytes) -> None:
+def process_file_data(data: bytes, file_checksum: bytes) -> None:
     accumulated_data = b""
 
     for i in range(0, len(data), CHECKSUM_SIZE + BUF_SIZE):
@@ -72,22 +81,29 @@ def process_file_data(data: bytes) -> None:
             )
             continue
 
-    # Save file after processing all the blocks
-    save_file(accumulated_data)
+    # Verify the file checksum
+    calculated_file_checksum = calculate_checksum(accumulated_data)
+    if calculated_file_checksum == file_checksum:
+        print(f"File checksum is valid {file_checksum}. Saving file.")
+        save_file(accumulated_data, encoding=ENCODING)
+    else:
+        print(
+            f"File checksum mismatch! Received: {file_checksum}, Calculated: {calculated_file_checksum}"
+        )
 
 
-def save_file(data: bytes) -> None:
+def save_file(data: bytes, encoding: str) -> None:
     with open("received_file_encoded", "wb") as file:
         file.write(data)
         print("Encoded file has been saved successfully.")
 
-    decoded_data = data.decode(ENCODING)
-    with open("received_file_decoded", "w", encoding=ENCODING) as file:
-        file.write(decoded_data)
+    with open("received_file_decoded", "w", encoding=encoding, newline="") as file:
+        file.write(data.decode(encoding))
         print("Decoded file has been saved successfully.")
 
 
 if __name__ == "__main__":
+    print("Client started")
     while True:
         msg = input()
         send_message(msg)
