@@ -22,6 +22,8 @@ def send_file(filename: str, addr: tuple, encoding: str = ENCODING) -> None:
         begin_msg = f"BEGIN 200 {file_checksum}"
         send_message(begin_msg, addr, False, encoding)
 
+        block_id = 0
+
         # Loop to send the file
         while True:
             data = file.read(BUF_SIZE)
@@ -29,9 +31,12 @@ def send_file(filename: str, addr: tuple, encoding: str = ENCODING) -> None:
                 break
 
             checksum = calculate_checksum(data)
-            send_message(checksum, addr, False, encoding)
 
-            send_message(data, addr, False, encoding)
+            block_msg = f"BLOCK {block_id} {checksum} ".encode(encoding) + data
+
+            send_message(block_msg, addr, False, encoding)
+
+            block_id += 1
 
     send_message(END_BYTE, addr, False, encoding)
     print(f"File {filename} sent to client. Transfer completed")
