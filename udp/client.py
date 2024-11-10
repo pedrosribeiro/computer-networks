@@ -51,9 +51,8 @@ def receive_file(server_addr: tuple):
 
         # Dados do arquivo recebidos em binário
         if receiving_file:
-            # Simular perda de pacotes (por exemplo, 10% de chance de ignorar o pacote)
             if random.random() < 0.1:
-                print("Simulando perda de pacote no lado do cliente.")
+                print("Simulating packet loss on client side...")
                 continue  # Ignora o pacote
             recv_data += data
         else:

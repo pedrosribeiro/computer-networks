@@ -1,1 +1,7 @@
 __pycache__/
+
+udp/downloads/*
+!udp/downloads/.gitkeep
+
+udp/storage/*
+!udp/storage/.gitkeep
