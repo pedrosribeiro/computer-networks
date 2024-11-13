@@ -63,12 +63,10 @@ def receive_file(server_addr: tuple):
 
     if receiving_file:
         print(f"processing {recv_data}")
-        process_file_data(recv_data, file_checksum, file_name, addr)
+        process_file_data(recv_data, file_checksum, file_name)
 
 
-def process_file_data(
-    data: bytes, file_checksum: bytes, file_name: str, server_addr: tuple
-) -> None:
+def process_file_data(data: bytes, file_checksum: bytes, file_name: str) -> None:
     global received_blocks, missing_blocks
     received_blocks.clear()
     missing_blocks.clear()
@@ -105,13 +103,13 @@ def process_file_data(
             print(f"Unexpected data format: {header}")
             break
 
-    request_missing_blocks(missing_blocks, server_addr)
+    request_missing_blocks(missing_blocks)
 
     # Verificar o checksum do arquivo inteiro
-    verify_complete_file(file_checksum, file_name, server_addr)
+    verify_complete_file(file_checksum, file_name)
 
 
-def verify_complete_file(expected_checksum: str, file_name: str, server_addr: tuple):
+def verify_complete_file(expected_checksum: str, file_name: str):
     attempts = 5
     while attempts > 0:
         # Verify the file checksum
@@ -124,22 +122,15 @@ def verify_complete_file(expected_checksum: str, file_name: str, server_addr: tu
             break
         else:
             print("File checksum mismatch! Requesting retransmission of all blocks.")
-            request_all_blocks(file_name, server_addr)
+            request_all_blocks(file_name)
             attempts -= 1
 
 
-def request_all_blocks(file_name: str, server_addr: tuple):
+def request_all_blocks(file_name: str):
     block_id = 0
     while True:
         retransmit_msg = f"RETRANSMIT {file_name} {block_id}"
-        msg_enc = retransmit_msg.encode(encoding=ENCODING)
-        msg_len = len(msg_enc)
-
-        for i in range(0, msg_len, BUF_SIZE):
-            sock.sendto(msg_enc[i : i + BUF_SIZE], server_addr)
-
-        sock.sendto(END_BYTE, server_addr)
-
+        send_message(retransmit_msg)
         print(f"Requesting retransmission of block {block_id} from file {file_name}")
 
         # Receber o bloco retransmitido
@@ -160,17 +151,10 @@ def request_all_blocks(file_name: str, server_addr: tuple):
         block_id += 1  # Avança para o próximo bloco
 
 
-def request_missing_blocks(missing_blocks: list[tuple[str, int]], server_addr: tuple):
+def request_missing_blocks(missing_blocks: list[tuple[str, int]]):
     for file_name, block_id in missing_blocks:
         retransmit_msg = f"RETRANSMIT {file_name} {block_id}"
-        msg_enc = retransmit_msg.encode(encoding=ENCODING)
-        msg_len = len(msg_enc)
-
-        for i in range(0, msg_len, BUF_SIZE):
-            sock.sendto(msg_enc[i : i + BUF_SIZE], server_addr)
-
-        sock.sendto(END_BYTE, server_addr)
-
+        send_message(retransmit_msg)
         print(f"Requesting retransmission of block {block_id} from file {file_name}")
 
         # Receive the retransmitted block
