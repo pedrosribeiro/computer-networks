@@ -35,10 +35,6 @@ def send_file(filename: str, addr: tuple, encoding: str = ENCODING) -> None:
             checksum = calculate_checksum(data)
             block_msg = f"BLOCK {block_id} {checksum} ".encode(encoding) + data
 
-            if random.random() < 0.1:
-                print("Simulating packet loss on server side...")
-                continue
-
             send_message(block_msg, addr, False, encoding)
 
             block_id += 1
