@@ -28,6 +28,51 @@ def send_request(client_socket):
     return request
 
 
+def receive_file_data(client_socket, file_size):
+    received_data = b""
+    remaining_size = file_size
+    while remaining_size > 0:
+        chunk = client_socket.recv(min(4096, remaining_size))
+        received_data += chunk
+        remaining_size -= len(chunk)
+    return received_data
+
+
+def save_received_file(received_data, client_id, filename):
+    client_dir = os.path.join("downloads", client_id)
+    os.makedirs(client_dir, exist_ok=True)
+    filepath = os.path.join(client_dir, filename)
+
+    with open(filepath, "wb") as file:
+        file.write(received_data)
+
+
+def handle_file_response(client_socket, client_id):
+    response = client_socket.recv(4096).decode("utf-8")
+    lines = response.split("\n")
+
+    if lines[0] == "Arquivo não encontrado":
+        print("File not found")
+        return
+
+    filename = lines[0].split(": ")[1]
+    file_size = int(lines[1].split(": ")[1])
+    file_hash = lines[2].split(": ")[1]
+
+    received_data = receive_file_data(client_socket, file_size)
+
+    if hashlib.sha256(received_data).hexdigest() != file_hash:
+        print("Error: File hash mismatch.")
+        print(f"Hash received: {file_hash}")
+        print(f"Hash calculated: {hashlib.sha256(received_data).hexdigest()}")
+        return
+
+    status = client_socket.recv(4096).decode("utf-8")
+
+    save_received_file(received_data, client_id, filename)
+    print(f"File {filename} received and saved.")
+
+
 def main():
     client_socket = connect_to_server()
 
@@ -40,7 +85,7 @@ def main():
             if request == "Sair":
                 break
             elif request.startswith("Arquivo"):
-                pass
+                handle_file_response(client_socket, client_id)
             elif request.startswith("Chat"):
                 pass
 
