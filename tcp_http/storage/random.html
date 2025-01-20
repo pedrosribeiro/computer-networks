@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Image</title>
+</head>
+<body>
+    <img src="" alt="Random Image" width="400">
+    <p></p>
+    <script>
+        fetch('https://picsum.photos/seed/' + Math.floor(Math.random() * 1000) + '/info')
+            .then(response => response.json())
+            .then(data => {
+                document.querySelector('img').src = data.download_url;
+                document.querySelector('p').innerHTML = `By: ${data.author}`;
+            });
+    </script>
+</body>
+</html>
+
