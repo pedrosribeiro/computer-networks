@@ -1,7 +1,9 @@
 __pycache__/
 
-udp/downloads/*
+*/downloads/*
 !udp/downloads/.gitkeep
+!tcp/downloads/.gitkeep
 
-udp/storage/*
+*/storage/*
 !udp/storage/.gitkeep
+!tcp/storage/.gitkeep
