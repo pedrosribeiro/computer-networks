@@ -73,6 +73,18 @@ def handle_file_response(client_socket, client_id):
     print(f"File {filename} received and saved.")
 
 
+def handle_chat(client_socket):
+    print("Chat started.")
+    while True:
+        message = input("[You]: ")
+        client_socket.sendall(message.encode("utf-8"))
+        if message == "Sair":
+            print("Chat ended.")
+            break
+        response = client_socket.recv(1024).decode("utf-8")
+        print(f"[Server] {response}")
+
+
 def main():
     client_socket = connect_to_server()
 
@@ -87,7 +99,7 @@ def main():
             elif request.startswith("Arquivo"):
                 handle_file_response(client_socket, client_id)
             elif request.startswith("Chat"):
-                pass
+                handle_chat(client_socket)
 
     finally:
         client_socket.close()

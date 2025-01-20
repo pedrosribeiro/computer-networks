@@ -37,7 +37,19 @@ def process_request(request, client_socket, client_address, client_id):
     elif request.startswith("Arquivo"):
         handle_file_request(request, client_socket, client_address, client_id)
     elif request.startswith("Chat"):
-        pass
+        handle_chat(client_socket, client_address, client_id)
+
+
+def handle_chat(client_socket, client_id):
+    print(f"[{client_id}] Chat started.")
+    while True:
+        message = receive_request(client_socket)
+        if not message or message == "Sair":
+            print(f"[{client_id}] Chat ended.")
+            break
+        print(f"[{client_id}]: {message}")
+        response = input(f"[You]: ")
+        send_message(client_socket, response)
 
 
 def calculate_file_hash(filepath):
