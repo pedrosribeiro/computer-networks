@@ -35,9 +35,9 @@ def process_request(request, client_socket, client_address, client_id):
     if request == "Sair":
         print(f"[{client_id}] Client desconnected.")
     elif request.startswith("Arquivo"):
-        handle_file_request(request, client_socket, client_address, client_id)
+        handle_file_request(request, client_socket, client_id)
     elif request.startswith("Chat"):
-        handle_chat(client_socket, client_address, client_id)
+        handle_chat(client_socket, client_id)
 
 
 def handle_file_request(request, client_socket, client_id):
